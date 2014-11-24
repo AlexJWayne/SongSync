@@ -7,15 +7,17 @@ class window.SongSync
     'sections'
   ]
 
-  eventTypesSingular: {
+  eventTypesSingular:
     sections: 'section'
-    tatums: 'tatum'
-    bars: 'bar'
-    beats: 'beat'
+    tatums:   'tatum'
+    bars:     'bar'
+    beats:    'beat'
     segments: 'segment'
-  }
+
+  schedulingBuffer: .35 # seconds
 
   constructor: (@audioPath, @dataPath) ->
+    @dataPath ||= @audioPath.replace /\.[\w\d]+?$/, '.json'
 
     smokesignals.convert this
     @loaded = no
@@ -42,7 +44,7 @@ class window.SongSync
       audio = document.createElement 'audio'
       audio.src = @audioPath
       audio.controls = 'controls'
-      audio.addEventListener 'timeupdate', @scheduleEvents, no
+      audio.addEventListener 'timeupdate', @scheduleEvents, false
       audio
     )
 
@@ -52,13 +54,11 @@ class window.SongSync
     for type in @eventTypes
       for i in [ @eventPlayHeads[type]...@data[type].length ]
         event = @data[type][i]
+        @eventPlayHeads[type] = i
 
-        if event.start < now + .350
-          @eventPlayHeads[type] = i
-          @scheduleEvent type, event
-
+        if event.start < now + @schedulingBuffer
+          @scheduleEvent @eventTypesSingular[type], event
         else
-          @eventPlayHeads[type] = i
           break
 
     return
@@ -67,7 +67,7 @@ class window.SongSync
     delay = (event.start - @audio.currentTime) * 1000
 
     setTimeout =>
-      @emit @eventTypesSingular[type], event
+      @emit type, event
     , delay
 
   start: =>

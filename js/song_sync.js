@@ -13,12 +13,15 @@
       segments: 'segment'
     };
 
+    SongSync.prototype.schedulingBuffer = .35;
+
     function SongSync(audioPath, dataPath) {
       var type, _i, _len, _ref;
       this.audioPath = audioPath;
       this.dataPath = dataPath;
       this.start = __bind(this.start, this);
       this.scheduleEvents = __bind(this.scheduleEvents, this);
+      this.dataPath || (this.dataPath = this.audioPath.replace(/\.[\w\d]+?$/, '.json'));
       smokesignals.convert(this);
       this.loaded = false;
       this.createAudioElement();
@@ -58,11 +61,10 @@
         type = _ref[_i];
         for (i = _j = _ref1 = this.eventPlayHeads[type], _ref2 = this.data[type].length; _ref1 <= _ref2 ? _j < _ref2 : _j > _ref2; i = _ref1 <= _ref2 ? ++_j : --_j) {
           event = this.data[type][i];
-          if (event.start < now + .350) {
-            this.eventPlayHeads[type] = i;
-            this.scheduleEvent(type, event);
+          this.eventPlayHeads[type] = i;
+          if (event.start < now + this.schedulingBuffer) {
+            this.scheduleEvent(this.eventTypesSingular[type], event);
           } else {
-            this.eventPlayHeads[type] = i;
             break;
           }
         }
@@ -74,7 +76,7 @@
       delay = (event.start - this.audio.currentTime) * 1000;
       return setTimeout((function(_this) {
         return function() {
-          return _this.emit(_this.eventTypesSingular[type], event);
+          return _this.emit(type, event);
         };
       })(this), delay);
     };
