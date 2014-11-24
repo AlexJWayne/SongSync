@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <title>SongSync Example</title>
+    <script src="../js/smokesignals.js"></script>
+    <script src="../js/reqwest.js"></script>
+    <script src="../js/song_sync.js"></script>
+    </head>
+  <body>
+    <div id="beatSquare" style="width: 200px; height: 200px; background-color: gray; display: inline-block; "></div>
+    <div id="barSquare"  style="width: 200px; height: 200px; background-color: gray; display: inline-block; "></div>
+
+
+    <script charset="utf-8">
+
+      // Toggle the square
+      var toggle = function(id) {
+        var el = document.getElementById(id);
+        if (el.style.backgroundColor === 'black') {
+          el.style.backgroundColor = 'gray'
+        } else {
+          el.style.backgroundColor = 'black'
+        }
+      }
+
+      var sync = new SongSync('../songs/AntiGravity.m4a', '../songs/AntiGravity.json');
+      document.body.appendChild(sync.audio);
+
+      sync.on('beat', function(beat) { toggle('beatSquare'); });
+      sync.on('bar',  function(bar)  { toggle('barSquare');  });
+      sync.on('load', sync.start);
+
+    </script>
+  </body>
+</html>
